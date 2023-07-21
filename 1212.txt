@@ -1,0 +1,420 @@
+	金額 (số tiền)	人   人及びシステム   システムABC	社外（従量）	社外（固定）
+月額	500万以上	SS	S		A	F		B
+	100万以上	S	A		A	F		B
+	50万以上		S	A		B	F		B
+	10万以上		S	B		B	F		B
+	10万未満		A	B		C	F		B
+年額	500万以上	ABC	S		A	F		B
+	100万以上	S	A		A	F		B
+	50万以上		S	DEF		B	F		B
+	10万以上		S	B		B	F		B
+	10万未満		A	B		C	F		B
+
+
+
+tôi muốn khi chọn 3 giá trị ở 3 cột mutiselect trên thì in kết quả lên ô input text với bảng ckeck list sau : 
+	金額 (số tiền)	人   人及びシステム   システムABC	社外（従量）	社外（固定）
+月額	500万以上	SS	S		A	F		B
+	100万以上	S	A		A	F		B
+	50万以上		S	A		B	F		B
+	10万以上		S	B		B	F		B
+	10万未満		A	B		C	F		B
+年額	500万以上	ABC	S		A	F		B
+	100万以上	S	A		A	F		B
+	50万以上		S	DEF		B	F		B
+	10万以上		S	B		B	F		B
+	10万未満		A	B		C	F		B
+
+
+ChatGPT
+Để hiển thị kết quả của 3 giá trị đã chọn từ ba cột multiselect lên ô input text, bạn cần tạo một hàm xử lý khi có sự thay đổi (sự kiện @input) trên mỗi multiselect. Hàm này sẽ lấy giá trị đã chọn từ cột và dựa vào bảng checklist được cung cấp để ánh xạ vào giá trị tương ứng.
+
+Dưới đây là mã JavaScript và bảng checklist tương ứng cho việc ánh xạ giá trị đã chọn từ cột multiselect vào ô input text:
+
+html
+Copy code
+<template>
+  <!-- Các cột Multiselect -->
+  <tr>
+    <th scope="row">金額区分</th>
+    <td>
+      <multiselect
+        v-model="selectedPaymentMethod.amountMoneyId"
+        :options="m_risk_amount_money"
+        label="amountMoney"
+        track-by="id"
+        mode="single"
+        :searchable="true"
+        noResultsText="結果が見つかりません"
+        placeholder="--検索--"
+        :disabled="isAmountMoneyDisabled"
+        @input="onAmountMoneyChange"
+      />
+    </td>
+  </tr>
+  <tr>
+    <th scope="row">金額</th>
+    <td>
+      <multiselect
+        v-model="selectedPaymentMethod.amountCategoryId"
+        :options="m_risk_amount_category"
+        label="amountCategory"
+        track-by="id"
+        mode="single"
+        :searchable="true"
+        noResultsText="結果が見つかりません"
+        placeholder="--検索--"
+        :disabled="isAmountCategoryDisabled"
+        @input="onAmountCategoryChange"
+      />
+    </td>
+  </tr>
+  <tr>
+    <th scope="row">データ作成方法</th>
+    <td>
+      <multiselect
+        v-model="selectedPaymentMethod.dataCreationId"
+        :options="m_risk_data_creation"
+        label="dataCreation"
+        track-by="id"
+        mode="single"
+        :searchable="true"
+        noResultsText="結果が見つかりません"
+        placeholder="--検索--"
+        :disabled="isDataCreationDisabled"
+        @input="onDataCreationChange"
+      />
+    </td>
+  </tr>
+  <!-- Ô input text -->
+  <tr>
+    <th scope="row">リスクレベル</th>
+    <td>
+      <input type="text" class="form-control" v-model="riskLevel" />
+    </td>
+  </tr>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      selectedPaymentMethod: {
+        amountMoneyId: null,
+        amountCategoryId: null,
+        dataCreationId: null,
+      },
+      riskLevel: "",
+      // Bảng checklist ánh xạ giá trị từ multiselect vào ô input text
+      checklist: {
+        // Giá trị từ cột '金額 (số tiền)'
+        amountMoney: {
+          "500万以上": {
+            人: "SS",
+            人及びシステム: "S",
+            システムABC: "A",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+          "100万以上": {
+            人: "S",
+            人及びシステム: "A",
+            システムABC: "A",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+          "50万以上": {
+            人: "S",
+            人及びシステム: "A",
+            システムABC: "B",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+          "10万以上": {
+            人: "S",
+            人及びシステム: "B",
+            システムABC: "B",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+          "10万未満": {
+            人: "A",
+            人及びシステム: "B",
+            システムABC: "C",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+        },
+        // Giá trị từ cột '年額'
+        amountCategory: {
+          "500万以上": {
+            人: "ABC",
+            人及びシステム: "S",
+            システムABC: "A",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+          "100万以上": {
+            人: "S",
+            人及びシステム: "A",
+            システムABC: "A",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+          "50万以上": {
+            人: "S",
+            人及びシステム: "DEF",
+            システムABC: "B",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+          "10万以上": {
+            人: "S",
+            人及びシステム: "B",
+            システムABC: "B",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+          "10万未満": {
+            人: "A",
+            人及びシステム: "B",
+            システムABC: "C",
+            社外（従量）: "F",
+            社外（固定）: "B",
+          },
+        },
+      },
+    };
+  },
+  methods: {
+    // Hàm xử lý khi có sự thay đổi từ cột '金額区分'
+    onAmountMoneyChange() {
+      this.updateRiskLevel();
+    },
+    // Hàm xử lý khi có sự thay đổi từ cột '金額'
+    onAmountCategoryChange() {
+      this.updateRiskLevel();
+    },
+    // Hàm xử lý khi có sự thay đổi từ cột
+
+
+
+User
+ <tr>
+            <th scope="row">金額区分</th>
+            <td>
+              <multiselect
+                v-model="selectedPaymentMethod.amountMoneyId"
+                :options="m_risk_amount_money"
+                label="amountMoney"
+                track-by="id"
+                mode="single"
+                :searchable="true"
+                noResultsText="結果が見つかりません"
+                placeholder="--検索--"
+                :disabled="isAmountMoneyDisabled"
+                @input="onAmountMoneyChange"
+              />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">金額</th>
+            <td>
+              <multiselect
+                v-model="selectedPaymentMethod.amountCategoryId"
+                :options="m_risk_amount_category"
+                label="amountCategory"
+                track-by="id"
+                mode="single"
+                :searchable="true"
+                noResultsText="結果が見つかりません"
+                placeholder="--検索--"
+                :disabled="isAmountCategoryDisabled"
+                @input="onAmountCategoryChange"
+              />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">データ作成方法</th>
+            <td>
+              <multiselect
+                v-model="selectedPaymentMethod.dataCreationId"
+                :options="m_risk_data_creation"
+                label="dataCreation"
+                track-by="id"
+                mode="single"
+                :searchable="true"
+                noResultsText="結果が見つかりません"
+                placeholder="--検索--"
+                :disabled="isDataCreationDisabled"
+              />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">リスクレベル</th>
+            <td>
+              <input type="text" class="form-control" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="submit" class="btn btn-sm btn-success">submit</button>
+    </form>
+  </div>
+</template>
+
+<script>
+import Multiselect from "vue-multiselect";
+export default {
+  name: "HomePage",
+  components: {
+    Multiselect,
+  },
+  data() {
+    return {
+      errors: {},
+      selectedPaymentMethod: {
+        rickLeve: "",
+        paymanetId: "",
+        amountMoneyId: "",
+        amountCategoryId: "",
+        dataCreationId: "",
+      },
+      m_risk_payment_method: [
+        { id: 1, paymanet: "支払" },
+        { id: 2, paymanet: "請求" },
+      ],
+      m_risk_amount_money: [
+        { id: 1, amountMoney: "月額" },
+        { id: 2, amountMoney: "年額" },
+      ],
+      m_risk_amount_category: [
+        { id: 1, amountCategory: "500万以上" },
+        { id: 2, amountCategory: "100万以上" },
+        { id: 3, amountCategory: "50万以上" },
+        { id: 4, amountCategory: "10万以上" },
+        { id: 5, amountCategory: "10万未満" },
+      ],
+      m_risk_data_creation: [
+        { id: 1, dataCreation: "人" },
+        { id: 2, dataCreation: "システム" },
+        { id: 3, dataCreation: "人およびシステム" },
+        { id: 4, dataCreation: "社外（従量" },
+        { id: 5, dataCreation: "社外（固定" },
+      ],
+    };
+  },
+  methods: {
+    onPaymentMethodChange() {
+      this.selectedPaymentMethod.amountMoneyId = null;
+      this.selectedPaymentMethod.amountCategoryId = null;
+      this.selectedPaymentMethod.dataCreationId = null;
+    },
+    onAmountMoneyChange() {
+      this.selectedPaymentMethod.amountCategoryId = null;
+      this.selectedPaymentMethod.dataCreationId = null;
+    },
+    onAmountCategoryChange() {
+      this.selectedPaymentMethod.dataCreationId = null;
+    },
+    onSubmit() {
+      console.log(this.selectedPaymentMethod);
+    },
+  },
+  computed: {
+    isAmountMoneyDisabled() {
+      return !this.selectedPaymentMethod.paymanetId;
+    },
+    isAmountCategoryDisabled() {
+      return !this.selectedPaymentMethod.amountMoneyId;
+    },
+    isDataCreationDisabled() {
+      return !this.selectedPaymentMethod.amountMoneyId;
+    },
+  },
+};
+</script>
+hiện tại code đang được xây dựng các đối tượng như này
+ChatGPT
+Để hiển thị kết quả từ ba cột multiselect lên ô input text dựa vào bảng checklist, bạn cần cập nhật hàm updateRiskLevel trong phần JavaScript của component của bạn. Bạn có thể thêm phương thức updateRiskLevel để xử lý việc ánh xạ giá trị đã chọn vào ô input text.
+
+Dưới đây là cách bạn có thể thực hiện điều đó:
+
+html
+Copy code
+<template>
+  <!-- Các cột Multiselect -->
+  <!-- ... -->
+  <!-- Ô input text -->
+  <tr>
+    <th scope="row">リスクレベル</th>
+    <td>
+      <input type="text" class="form-control" v-model="selectedPaymentMethod.rickLeve" />
+    </td>
+  </tr>
+  <!-- Nút submit -->
+  <tr>
+    <td colspan="2">
+      <button type="submit" class="btn btn-sm btn-success" @click="onSubmit">Submit</button>
+    </td>
+  </tr>
+</template>
+
+<script>
+// Import vue-multiselect component if you haven't already imported it
+import Multiselect from "vue-multiselect";
+
+export default {
+  // ... Your existing code ...
+
+  methods: {
+    // ... Your existing methods ...
+
+    // Hàm xử lý khi có sự thay đổi từ cột 'データ作成方法'
+    onDataCreationChange() {
+      this.updateRiskLevel();
+    },
+
+    // Hàm cập nhật giá trị của ô input 'リスクレベル' dựa vào các giá trị đã chọn từ các cột
+    updateRiskLevel() {
+      const amountMoney = this.selectedPaymentMethod.amountMoneyId;
+      const amountCategory = this.selectedPaymentMethod.amountCategoryId;
+      const dataCreation = this.selectedPaymentMethod.dataCreationId;
+
+      // Kiểm tra xem đã chọn đủ ba giá trị hay chưa
+      if (amountMoney && amountCategory && dataCreation) {
+        // Lấy giá trị từ bảng checklist tương ứng với các giá trị đã chọn
+        const selectedRiskLevel = this.checklist[amountMoney][amountCategory][dataCreation];
+
+        // Cập nhật giá trị vào ô input 'リスクレベル'
+        this.selectedPaymentMethod.rickLeve = selectedRiskLevel;
+      } else {
+        // Nếu chưa chọn đủ ba giá trị thì để ô input trống
+        this.selectedPaymentMethod.rickLeve = "";
+      }
+    },
+
+    // Hàm xử lý khi nhấn nút Submit
+    onSubmit() {
+      // Gọi hàm cập nhật giá trị trước khi submit
+      this.updateRiskLevel();
+      
+      // Thực hiện các xử lý khác khi nhấn Submit
+      // Ví dụ:
+      console.log(this.selectedPaymentMethod);
+    },
+  },
+};
+</script>
+Trong phần mã JavaScript trên, chúng tôi đã cập nhật hàm updateRiskLevel để lấy giá trị từ bảng checklist tương ứng với các giá trị đã chọn từ ba cột multiselect và cập nhật giá trị vào ô input 'リスクレベル'. Khi người dùng chọn hoặc thay đổi giá trị trong ba cột, hàm updateRiskLevel sẽ được gọi để cập nhật giá trị hiển thị trong ô input 'リスクレベル'.
+
+Ngoài ra, chúng tôi đã thêm một nút Submit để thực hiện các xử lý khi người dùng nhấn nút này. Trong hàm onSubmit, chúng tôi cũng đã gọi hàm updateRiskLevel trước khi thực hiện các xử lý khác (trong ví dụ này
+
+
+
+
+
+
+
+
+
